@@ -1,0 +1,27 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WpfApp", "WpfApp\WpfApp.csproj", "{B4D354BE-D949-486E-9886-6D8EBB749FBA}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Scanner.Core", "Scanner.Core\Scanner.Core.csproj", "{AC4564CF-5641-4972-A4E5-5450B29ADDEB}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Scanner.Tests", "Scanner.Tests\Scanner.Tests.csproj", "{39CCF080-33B9-4EF9-ADCA-EFE92A752CDA}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{B4D354BE-D949-486E-9886-6D8EBB749FBA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B4D354BE-D949-486E-9886-6D8EBB749FBA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B4D354BE-D949-486E-9886-6D8EBB749FBA}.Debug|Any CPU.Deploy.0 = Debug|Any CPU
+		{AC4564CF-5641-4972-A4E5-5450B29ADDEB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{AC4564CF-5641-4972-A4E5-5450B29ADDEB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{AC4564CF-5641-4972-A4E5-5450B29ADDEB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{AC4564CF-5641-4972-A4E5-5450B29ADDEB}.Release|Any CPU.Build.0 = Release|Any CPU
+		{39CCF080-33B9-4EF9-ADCA-EFE92A752CDA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{39CCF080-33B9-4EF9-ADCA-EFE92A752CDA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{39CCF080-33B9-4EF9-ADCA-EFE92A752CDA}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{39CCF080-33B9-4EF9-ADCA-EFE92A752CDA}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+EndGlobal
