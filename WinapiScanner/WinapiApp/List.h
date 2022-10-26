@@ -7,13 +7,66 @@ class List :
 	public IList<TKey, TValue>
 {
 public:
-	List();
+	List()
+	{
+		_head = new Node<TKey, TValue>();
+		_head->next = nullptr;
+	}
 
-	~List();
+	~List()
+	{
+		Node<TKey, TValue>* removed;
+		while (_head)
+		{
+			removed = _head;
+			_head = _head->next;
+			delete removed;
+		}
+	}
 
-	bool insert(TKey key, TValue value) override;
+	bool insert(TKey key, TValue value) override
+	{
+		// Search node to insert after
+		auto left = _head;
+		while (left->next && left->next->key < key)
+			left = left->next;
 
-	bool remove(TKey key) override;
+		auto inserted = new Node<TKey, TValue>();
+
+		// Failed to allocate memory
+		if (!inserted)
+			return false;
+
+		// Init node
+		inserted->key = key;
+		inserted->value = value;
+
+		// Change links
+		inserted->next = left->next;
+		left->next = inserted;
+
+		return true;
+	}
+
+	bool remove(TKey key) override
+	{
+		// Search node to remove after
+		auto left = _head;
+		while (left->next && left->next->key != key)
+			left = left->next;
+
+		// Key not found
+		auto removed = left->next;
+		if (!removed)
+			return false;
+
+		// Change links
+		auto right = removed->next;
+		delete removed;
+		left->next = right;
+
+		return true;
+	}
 
 	Node<TKey, TValue>* _head;
 };
