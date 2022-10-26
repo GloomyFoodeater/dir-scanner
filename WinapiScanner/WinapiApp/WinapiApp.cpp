@@ -11,6 +11,15 @@ HINSTANCE hInst;                                // current instance
 WCHAR szTitle[MAX_LOADSTRING];                  // The title bar text
 WCHAR szWindowClass[MAX_LOADSTRING];            // the main window class name
 
+// Handles
+HWND hListBox;
+HWND hEditNeedle;
+HWND hEditDir;
+HWND hLblNeedle;
+HWND hLblDir;
+HWND hBtnScan;
+HWND hBtnOpen;
+
 // Forward declarations of functions included in this code module:
 ATOM                MyRegisterClass(HINSTANCE hInstance);
 BOOL                InitInstance(HINSTANCE, int);
@@ -24,8 +33,6 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 {
     UNREFERENCED_PARAMETER(hPrevInstance);
     UNREFERENCED_PARAMETER(lpCmdLine);
-
-    // TODO: Place code here.
 
     // Initialize global strings
     LoadStringW(hInstance, IDS_APP_TITLE, szTitle, MAX_LOADSTRING);
@@ -125,6 +132,103 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
     switch (message)
     {
+    case WM_CREATE:
+    {
+        // Create list box to output scanner result
+        hListBox = CreateWindow(L"listbox", NULL,
+            WS_CHILD | WS_VISIBLE | LBS_STANDARD | LBS_WANTKEYBOARDINPUT,
+            0, 0, 0, 0,
+            hWnd, (HMENU)ID_LIST, hInst, NULL);
+
+        hEditNeedle = CreateWindow(L"edit", NULL, 
+            WS_CHILD | WS_VISIBLE | WS_BORDER | ES_AUTOHSCROLL,
+            0, 0, 0, 0,
+            hWnd, (HMENU)ID_EDIT_NEEDLE, hInst, NULL);
+
+        hLblNeedle = CreateWindow(L"static", L"Needle",
+            WS_VISIBLE | WS_CHILD | SS_RIGHT,
+            0, 0, 0, 0, 
+            hWnd, NULL, hInst, NULL);
+
+        hEditDir = CreateWindow(L"edit", NULL,
+            WS_CHILD | WS_VISIBLE | WS_BORDER | ES_AUTOHSCROLL,
+            0, 0, 0, 0,
+            hWnd, (HMENU)ID_EDIT_DIR, hInst, NULL);
+
+        hLblDir = CreateWindow(L"static", L"Directory",
+            WS_VISIBLE | WS_CHILD | SS_RIGHT,
+            0, 0, 0, 0,
+            hWnd, NULL, hInst, NULL);
+
+        hBtnScan = CreateWindow(L"button", L"Scan",
+            WS_VISIBLE | WS_CHILD,
+            0, 0, 0, 0,
+            hWnd, (HMENU)ID_BUTTON_SCAN, hInst, NULL);
+
+        hBtnOpen = CreateWindow(L"button", L"Open",
+            WS_VISIBLE | WS_CHILD,
+            0, 0, 0, 0,
+            hWnd, (HMENU)ID_BUTTON_OPEN, hInst, NULL);
+
+        // TODO: Move to button
+        DirectoryScanner scanner;
+        BlockingList<wstring, int> list;
+        WCHAR buf[MAX_PATH];
+        GetCurrentDirectory(MAX_PATH, buf);
+        scanner.Scan(buf, L"hello", list);
+        for (auto node = list._head->next; node != nullptr; node = node->next)
+            SendMessage(hListBox, LB_ADDSTRING, 0, (LPARAM)node->key.c_str());
+    }
+    break;
+    case WM_SIZE:
+    {
+        int x, y, cx, cy;
+        RECT rect;
+        GetClientRect(hWnd, &rect);
+        int clientW = rect.right - rect.left;
+        int clientH = rect.bottom - rect.top;
+
+        // Resize listbox
+        x = 0;
+        y = 40;
+        cx = clientW;
+        cy = clientH;
+        SetWindowPos(hListBox, 0, x, y, cx, cy, 0);
+
+        y = 10;
+        cy = 20;
+
+        // Resize label for needle
+        x = 0.05 * clientW;
+        cx = 60;
+        SetWindowPos(hLblNeedle, 0, x, y, cx, cy, 0);
+
+        // Resize edit for needle
+        x = x + cx;
+        cx = 160;
+        SetWindowPos(hEditNeedle, 0, x, y, cx, cy, 0);
+
+        // Resize label for dir
+        x = max(x + cx + 20, 0.2 * clientW - 80);
+        cx = 60;
+        SetWindowPos(hLblDir, 0, x, y, cx, cy, 0);
+
+        // Resize edit for directory
+        x = x + cx;
+        cx = 0.3 * clientW;
+        SetWindowPos(hEditDir, 0, x, y, cx, cy, 0);
+
+        // Resize scan button
+        x = x + cx + 20;
+        cx = 80;
+        SetWindowPos(hBtnScan, 0, x, y, cx, cy, 0);
+
+        // Resize open button
+        x = x + cx + 10;
+        cx = 80;
+        SetWindowPos(hBtnOpen, 0, x, y, cx, cy, 0);
+    }
+        break;
     case WM_COMMAND:
         {
             int wmId = LOWORD(wParam);
@@ -140,14 +244,6 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
             default:
                 return DefWindowProc(hWnd, message, wParam, lParam);
             }
-        }
-        break;
-    case WM_PAINT:
-        {
-            PAINTSTRUCT ps;
-            HDC hdc = BeginPaint(hWnd, &ps);
-            // TODO: Add any drawing code that uses hdc here...
-            EndPaint(hWnd, &ps);
         }
         break;
     case WM_DESTROY:
