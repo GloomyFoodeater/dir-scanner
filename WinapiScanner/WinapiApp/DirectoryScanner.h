@@ -8,7 +8,7 @@ class DirectoryScanner
 {
 public:
 	DirectoryScanner();
-	void Scan(wstring dir_name, wstring str, IList<wstring, int>& entries);
+	bool Scan(wstring dir_name, wstring str, IList<wstring, int>& entries);
 private:
 	int _unfinished_counter;
 	CONDITION_VARIABLE _is_scan_finished;

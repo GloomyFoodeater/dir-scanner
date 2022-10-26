@@ -45,21 +45,29 @@ DirectoryScanner::DirectoryScanner()
 	InitializeCriticalSection(&_counter_lock);
 }
 
-void DirectoryScanner::Scan(wstring dir_name, wstring str, IList<wstring, int>& entries)
+bool DirectoryScanner::Scan(wstring dir_name, wstring str, IList<wstring, int>& entries)
 {
 	WIN32_FIND_DATA  file_data{ 0 };
 
 	// Start search
 	HANDLE hFindFile = FindFirstFile((dir_name + L"\\*").c_str(), &file_data);
-	if (!hFindFile)
-		return;
+	if (hFindFile == INVALID_HANDLE_VALUE)
+		return false;
 
 	// Proceed search
 	do {
 		if (!(file_data.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY))
 		{
 			// Allocate memory for params, releasing must be inside callback
-			auto context = new ContextStruct{ file_data.cFileName, str, entries, _unfinished_counter, _is_scan_finished, _counter_lock };
+			auto context = new ContextStruct
+			{ 
+				file_data.cFileName, 
+				str,
+				entries, 
+				_unfinished_counter, 
+				_is_scan_finished, 
+				_counter_lock 
+			};
 			
 			// Put work in thread pool
 			auto work = CreateThreadpoolWork(WorkCallback, context, NULL);
@@ -73,4 +81,6 @@ void DirectoryScanner::Scan(wstring dir_name, wstring str, IList<wstring, int>& 
 	while (_unfinished_counter > 0)
 		SleepConditionVariableCS(&_is_scan_finished, &_counter_lock, INFINITE);
 	LeaveCriticalSection(&_counter_lock);
+
+	return true;
 }
