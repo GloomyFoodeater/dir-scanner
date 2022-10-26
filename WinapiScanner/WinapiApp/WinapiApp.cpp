@@ -222,13 +222,24 @@ void OnScanClick()
 
 	// Extract text from needle edit
 	length = GetWindowTextLength(hEditNeedle) + 1;
+	if (length == 1)
+	{
+		MessageBox(NULL, L"Needle was empty", L"Error", MB_OK);
+		return;
+	}
 	GetWindowText(hEditNeedle, buf, length);
 	needle = buf;
 
 	// Extract text from dir edit
 	length = GetWindowTextLength(hEditDir) + 1;
+	if (length == 1)
+	{
+		MessageBox(NULL, L"Directory was not set", L"Error", MB_OK);
+		return;
+	}
 	GetWindowText(hEditDir, buf, length);
 	dir = buf;
+
 
 	// Scan directory
 	BlockingList<wstring, int> list;
@@ -242,7 +253,10 @@ void OnScanClick()
 	// Set listbox
 	SendMessage(hListBox, LB_RESETCONTENT, 0, 0);
 	for (auto node = list._head->next; node != nullptr; node = node->next)
-		SendMessage(hListBox, LB_ADDSTRING, 0, (LPARAM)node->key.c_str());
+	{
+		wstring outputString = node->key + L": " + std::to_wstring(node->value);
+		SendMessage(hListBox, LB_ADDSTRING, 0, (LPARAM)outputString.c_str());
+	}
 }
 
 void OnOpenClick()

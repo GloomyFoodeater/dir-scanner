@@ -1,8 +1,8 @@
 ﻿#pragma once
 
 #include "resource.h"
-#include <shobjidl.h> 
 
+#include <shobjidl.h> // For open file dialog
 
 #include "List.h"
 #include "BlockingList.h"

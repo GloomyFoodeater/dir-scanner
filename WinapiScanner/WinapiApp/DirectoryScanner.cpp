@@ -3,15 +3,37 @@
 // Struct to pass parameters to callback function
 typedef struct {
 	wstring file_name;				// Name of file to insert as key into entries
-	wstring str;					// String to search for
-
+	
 	// Refrences to shared between threads data
+	wstring& dir_name;				// Path to the file
+	wstring& str;					// String to search for
 	IList<wstring, int>& entries;	// List of entries
 	int& unfinished_counter;		// Counter of unfinished tasks
 	CONDITION_VARIABLE& finished;	// Conditional variable
 	CRITICAL_SECTION& counter_lock;	// Critical section to change counter & wake variable
 
 } ContextStruct;
+
+int CountOcurrences(wstring& haystack, wstring& needle)
+{
+	int entries = 0;
+	int N = haystack.size();
+	int M = needle.size();
+
+	// Iterate over haystack
+	for (int i = 0; i < N; i++)
+	{
+		int j;
+		for (j = 0; j < M; j++)
+			if (haystack[i + j] != needle[j])
+				break;
+
+		// Weak typing feature
+		entries += (j == M);
+	}
+
+	return entries;
+}
 
 VOID CALLBACK WorkCallback(
 	_Inout_     PTP_CALLBACK_INSTANCE Instance,
@@ -24,10 +46,20 @@ VOID CALLBACK WorkCallback(
 	// Check to supress warning
 	if (context)
 	{
+		// Open file in utf-8
+		wifstream ifs(context->dir_name + L"\\" + context->file_name);
+		ifs.imbue(std::locale(std::locale::empty(), new std::codecvt_utf8<wchar_t>));
+
+		// Count entries line-by-line
+		wstring line;
 		int entries = 0;
-		// TODO: Add entry count
+		while (getline(ifs, line))
+			entries += CountOcurrences(line, context->str);
+
+		ifs.close();
+
 		context->entries.insert(context->file_name, entries);
-		
+
 		// Locking on counter
 		EnterCriticalSection(&(context->counter_lock));
 		context->unfinished_counter--;					// Change condition
@@ -53,22 +85,23 @@ bool DirectoryScanner::Scan(wstring dir_name, wstring str, IList<wstring, int>& 
 	HANDLE hFindFile = FindFirstFile((dir_name + L"\\*").c_str(), &file_data);
 	if (hFindFile == INVALID_HANDLE_VALUE)
 		return false;
-
+	
 	// Proceed search
 	do {
 		if (!(file_data.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY))
 		{
 			// Allocate memory for params, releasing must be inside callback
 			auto context = new ContextStruct
-			{ 
-				file_data.cFileName, 
+			{
+				file_data.cFileName,
+				dir_name,
 				str,
-				entries, 
-				_unfinished_counter, 
-				_is_scan_finished, 
-				_counter_lock 
+				entries,
+				_unfinished_counter,
+				_is_scan_finished,
+				_counter_lock
 			};
-			
+
 			// Put work in thread pool
 			auto work = CreateThreadpoolWork(WorkCallback, context, NULL);
 			_unfinished_counter++;

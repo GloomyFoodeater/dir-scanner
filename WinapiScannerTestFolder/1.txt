@@ -1,0 +1,9 @@
+привет
+grepgrepgrep
+
+gr
+ep
+
+grep
+grep
+grер <- тут русские символы

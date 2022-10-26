@@ -1,8 +1,15 @@
+#pragma once
 #include <string>
 #include "IList.h"
 #include "Windows.h"
+#include <fstream>
+#include <locale>
+#include <codecvt>
+
 
 using std::wstring;
+using std::wifstream;
+using std::getline;
 
 class DirectoryScanner
 {
