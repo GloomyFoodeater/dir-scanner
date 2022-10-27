@@ -20,7 +20,8 @@ int CountOcurrences(wstring& haystack, wstring& needle)
 	int N = haystack.size();
 	int M = needle.size();
 
-	// Iterate over haystack
+	// Iterate over haystack;
+	// N - M to avoid out of bounds of haystack
 	for (int i = 0; i < N; i++)
 	{
 		int j;
