@@ -25,8 +25,6 @@ public:
 		Node<TKey, TValue>* right_node, * left_node;
 		do {
 			right_node = search(key, &left_node);
-			if ((right_node != tail) && (right_node->key == key)) /*T1*/
-				return false;
 			new_node->next = right_node;
 			if (CAS(&(left_node->next), new_node, right_node)) /*C2*/
 				return true;
