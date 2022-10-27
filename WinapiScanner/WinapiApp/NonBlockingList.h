@@ -13,11 +13,6 @@ public:
 		this->_head->next = _tail;
 	}
 
-	~NonBlockingList() override
-	{
-		// TODO: implement destructor
-	}
-
 	Node<TKey, TValue>* end()
 	{
 		return _tail;
