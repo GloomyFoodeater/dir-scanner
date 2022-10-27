@@ -13,7 +13,7 @@ public:
 		_head->next = nullptr;
 	}
 
-	~List()
+	virtual ~List()
 	{
 		Node<TKey, TValue>* removed;
 		while (_head)

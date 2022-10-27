@@ -14,6 +14,17 @@ public:
         InitializeCriticalSection(&_resize_lock);
     }
 
+    ~BlockingList() override
+    {
+        EnterCriticalSection(&_resize_lock);
+
+        // Destructor of List will be called 2 times, but
+        // 2nd time list will alreade be empty
+        List<TKey, TValue>::~List();
+
+        LeaveCriticalSection(&_resize_lock);
+    }
+
     bool insert(TKey key, TValue value) override
     {
         EnterCriticalSection(&_resize_lock);
