@@ -183,7 +183,7 @@ LRESULT CALLBACK OnSize(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 	cy = 20;
 
 	// Resize label for needle
-	x = 0.05 * clientW;
+	x = (int)(0.05 * clientW);
 	cx = 60;
 	SetWindowPos(hLblNeedle, 0, x, y, cx, cy, 0);
 
@@ -193,13 +193,13 @@ LRESULT CALLBACK OnSize(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 	SetWindowPos(hEditNeedle, 0, x, y, cx, cy, 0);
 
 	// Resize label for dir
-	x = max(x + cx + 20, 0.2 * clientW - 80);
+	x = max(x + cx + 20, (int)(0.2 * clientW - 80));
 	cx = 60;
 	SetWindowPos(hLblDir, 0, x, y, cx, cy, 0);
 
 	// Resize edit for directory
 	x = x + cx;
-	cx = 0.3 * clientW;
+	cx = (int)(0.3 * clientW);
 	SetWindowPos(hEditDir, 0, x, y, cx, cy, 0);
 
 	// Resize scan button
@@ -242,7 +242,7 @@ void OnScanClick()
 
 
 	// Scan directory
-	BlockingList<wstring, int> list;
+	NonBlockingList<wstring, int> list;
 	bool res = scanner.Scan(dir, needle, list);
 	if (!res)
 	{
@@ -252,9 +252,9 @@ void OnScanClick()
 
 	// Set listbox
 	SendMessage(hListBox, LB_RESETCONTENT, 0, 0);
-	for (auto node = list._head->next; node != nullptr; node = node->next)
+	for (auto it = list.begin(); it != list.end(); it = it->next)
 	{
-		wstring outputString = node->key + L": " + std::to_wstring(node->value);
+		wstring outputString = it->key + L": " + std::to_wstring(it->value);
 		SendMessage(hListBox, LB_ADDSTRING, 0, (LPARAM)outputString.c_str());
 	}
 }

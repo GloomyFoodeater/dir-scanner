@@ -6,43 +6,43 @@
 
 template <typename TKey, typename TValue>
 class BlockingList :
-    public List<TKey, TValue>
+	public List<TKey, TValue>
 {
 public:
-    BlockingList() : List<TKey, TValue>()
-    {
-        InitializeCriticalSection(&_resize_lock);
-    }
+	BlockingList() : List<TKey, TValue>()
+	{
+		InitializeCriticalSection(&_resize_lock);
+	}
 
-    ~BlockingList() override
-    {
-        EnterCriticalSection(&_resize_lock);
+	~BlockingList() override
+	{
+		EnterCriticalSection(&_resize_lock);
 
-        // Destructor of List will be called 2 times, but
-        // 2nd time list will alreade be empty
-        List<TKey, TValue>::~List();
+		// Destructor of List will be called 2 times, but
+		// 2nd time list will alreade be empty
+		List<TKey, TValue>::~List();
 
-        LeaveCriticalSection(&_resize_lock);
-    }
+		LeaveCriticalSection(&_resize_lock);
+	}
 
-    bool insert(TKey key, TValue value) override
-    {
-        EnterCriticalSection(&_resize_lock);
-        bool is_inserted = List<TKey, TValue>::insert(key, value);
-        LeaveCriticalSection(&_resize_lock);
+	bool insert(TKey key, TValue value) override
+	{
+		EnterCriticalSection(&_resize_lock);
+		bool is_inserted = List<TKey, TValue>::insert(key, value);
+		LeaveCriticalSection(&_resize_lock);
 
-        return is_inserted;
-    }
+		return is_inserted;
+	}
 
-    bool remove(TKey key) override
-    {
-        EnterCriticalSection(&_resize_lock);
-        bool is_removed = List<TKey, TValue>::remove(key);
-        LeaveCriticalSection(&_resize_lock);
+	bool remove(TKey key) override
+	{
+		EnterCriticalSection(&_resize_lock);
+		bool is_removed = List<TKey, TValue>::remove(key);
+		LeaveCriticalSection(&_resize_lock);
 
-        return is_removed;
-    }
+		return is_removed;
+	}
 
 private:
-    CRITICAL_SECTION _resize_lock;
+	CRITICAL_SECTION _resize_lock;
 };

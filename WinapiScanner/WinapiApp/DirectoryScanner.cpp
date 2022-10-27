@@ -3,7 +3,7 @@
 // Struct to pass parameters to callback function
 typedef struct {
 	wstring file_name;				// Name of file to insert as key into entries
-	
+
 	// Refrences to shared between threads data
 	wstring& dir_name;				// Path to the file
 	wstring& str;					// String to search for
@@ -86,7 +86,7 @@ bool DirectoryScanner::Scan(wstring dir_name, wstring str, IList<wstring, int>& 
 	HANDLE hFindFile = FindFirstFile((dir_name + L"\\*").c_str(), &file_data);
 	if (hFindFile == INVALID_HANDLE_VALUE)
 		return false;
-	
+
 	// Proceed search
 	do {
 		if (!(file_data.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY))

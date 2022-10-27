@@ -24,6 +24,16 @@ public:
 		}
 	}
 
+	Node<TKey, TValue>* begin() override
+	{
+		return _head->next;
+	}
+
+	Node<TKey, TValue>* end() override
+	{
+		return nullptr;
+	}
+
 	bool insert(TKey key, TValue value) override
 	{
 		// Search node to insert after

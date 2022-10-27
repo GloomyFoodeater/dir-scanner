@@ -8,14 +8,19 @@ class NonBlockingList : public List<TKey, TValue>
 public:
 	NonBlockingList() : List<TKey, TValue>()
 	{
-		tail = new Node<TKey, TValue>();
-		tail->next = nullptr;
-		this->_head->next = tail;
+		_tail = new Node<TKey, TValue>();
+		_tail->next = nullptr;
+		this->_head->next = _tail;
 	}
 
 	~NonBlockingList() override
 	{
 		// TODO: implement destructor
+	}
+
+	Node<TKey, TValue>* end()
+	{
+		return _tail;
 	}
 
 	bool insert(TKey key, TValue value) override
@@ -36,7 +41,7 @@ public:
 		Node<TKey, TValue>* right_node, * right_node_next, * left_node;
 		do {
 			right_node = search(key, &left_node);
-			if ((right_node == tail) || (right_node->key != key)) /*T1*/
+			if ((right_node == _tail) || (right_node->key != key)) /*T1*/
 				return false;
 			right_node_next = right_node->next;
 			if (!is_marked_reference(right_node_next))
@@ -53,7 +58,7 @@ public:
 
 private:
 
-	Node<TKey, TValue>* tail;
+	Node<TKey, TValue>* _tail;
 
 	Node<TKey, TValue>* search(TKey search_key, Node<TKey, TValue>** left_node)
 	{
@@ -71,7 +76,7 @@ private:
 					left_node_next = t_next;
 				}
 				t = get_unmarked_reference(t_next);
-				if (t == tail)
+				if (t == _tail)
 					break;
 				t_next = t->next;
 			} while (is_marked_reference(t_next) || (t->key < search_key));
@@ -80,7 +85,7 @@ private:
 
 			/* 2: Check nodes are adjacent */
 			if (left_node_next == right_node)
-				if ((right_node != tail) && is_marked_reference(right_node->next))
+				if ((right_node != _tail) && is_marked_reference(right_node->next))
 					goto search_again; /*G1*/
 				else
 					return right_node; /*R1*/
@@ -90,7 +95,7 @@ private:
 			{
 				delete left_node_next;
 
-				if ((right_node != tail) && is_marked_reference(right_node->next))
+				if ((right_node != _tail) && is_marked_reference(right_node->next))
 					goto search_again; /*G2*/
 				else
 					return right_node; /*R2*/

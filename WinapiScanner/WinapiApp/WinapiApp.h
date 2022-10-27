@@ -6,8 +6,9 @@
 
 #include "List.h"
 #include "BlockingList.h"
+#include "NonBlockingList.h"
+
 #include "DirectoryScanner.h"
-#include "Node.h"
 
 #define ID_LIST			1
 #define ID_EDIT_NEEDLE	2
