@@ -43,7 +43,10 @@ public:
 				if (CAS(&(right_node->next), get_marked_reference(right_node_next), right_node_next))
 					break;
 		} while (true); /*B4*/
-		if (!CAS(&(left_node->next), right_node_next, right_node)) /*C4*/
+
+		if (CAS(&(left_node->next), right_node_next, right_node)) /*C4*/
+			delete right_node;
+		else
 			right_node = search(right_node->key, &left_node);
 		return true;
 	}
@@ -84,10 +87,14 @@ private:
 
 			/* 3: Remove one or more marked nodes */
 			if (CAS(&((*left_node)->next), right_node, left_node_next)) /*C1*/
+			{
+				delete left_node_next;
+
 				if ((right_node != tail) && is_marked_reference(right_node->next))
 					goto search_again; /*G2*/
 				else
 					return right_node; /*R2*/
+			}
 
 		} while (true); /*B2*/
 	}
