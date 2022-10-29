@@ -1,4 +1,5 @@
 ﻿using System.Collections.Concurrent;
+using System.Security;
 using Scanner.Core.Interfaces;
 using Scanner.Core.Models;
 
@@ -20,21 +21,32 @@ public class DirScanner : IDirScanner
 
     public FileTree Start(string source)
     {
-        // Validate source
-        if (!Directory.Exists(source))
-            throw new ArgumentException($"Given directory '{source}' did not exist");
+        // Validate source & get full path.
+        try
+        {
+            source = Path.GetFullPath(source);
+        }
+        catch (SecurityException)
+        {
+            throw new SecurityException($"Given path {source} was not accessible");
+        }
+        catch
+        {
+            // Exceptions: ArgumentNull, Argument, PathTooLong exceptions
+            throw new ArgumentException($"Failed to restore full path from {source}");
+        }
 
-        // Init data for multithreading
-        _tokenSource = new CancellationTokenSource();
-        _semaphore = new SemaphoreSlim(_maxRunningThreads, _maxRunningThreads);
-        _queue = new ConcurrentQueue<Task>();
+        // Init data for multithreading.
+        _tokenSource = new();
+        _semaphore = new(_maxRunningThreads, _maxRunningThreads);
+        _queue = new();
 
-        // Enqueue task for root
-        FileTree root = new (Path.GetFullPath(source), new List<FileNode>());
-        Task? scanningTask = new (ScanningTaskCallback, root, _tokenSource.Token);
+        // Enqueue task for root.
+        FileTree root = new(source, new List<FileNode>());
+        Task? scanningTask = new(ScanningTaskCallback, root, _tokenSource.Token);
         _queue.Enqueue(scanningTask);
 
-        // Loop over queue
+        // Loop over queue.
         while (_semaphore.CurrentCount != _maxRunningThreads || !_queue.IsEmpty)
         {
             _queue.TryDequeue(out scanningTask);
@@ -50,61 +62,62 @@ public class DirScanner : IDirScanner
 
     public void Cancel()
     {
-        // Cancel via token
+        // Cancel via token.
         _tokenSource?.Cancel();
-        _tokenSource?.Dispose();
-        _tokenSource = null;
     }
 
     private void ScanningTaskCallback(object? param)
     {
         var root = (FileTree)param!;
-        CancellationToken token = _tokenSource!.Token;
-        
-        // Get files and directories
-        DirectoryInfo rootInfo = new(root.Name);
-        FileSystemInfo[] fileSystemInfos;
         try
         {
-            fileSystemInfos = rootInfo.GetFileSystemInfos();
+            // Get files.
+            DirectoryInfo rootInfo = new(root.Name); // Exceptions: Security, Argument, ArgumentNull, PathTooLong
+            var fileSystemInfos = rootInfo.GetFileSystemInfos(); // Exceptions: DirectoryNotFoundException
+
+            // Iterate over files.
+            foreach (var info in fileSystemInfos)
+                HandleFile(root, info);
         }
-        catch (DirectoryNotFoundException)
+        catch (OperationCanceledException)
         {
-            // Root directory did not exist
-            _semaphore!.Release();
-            return;
+            // Task was cancelled via cancellation token.
+            throw;
         }
-
-        // Iterate over files
-        foreach (var info in fileSystemInfos) 
-            HandleFile(root, info);
-
-        _semaphore!.Release();
+        catch
+        {
+            // Exceptions: Security, Argument, ArgumentNull, DirectoryNotFound, PathTooLong, FileNotFound, IO
+            // Ignore.
+        }
+        finally
+        {
+            _semaphore!.Release();
+        }
     }
 
     private void HandleFile(FileTree root, FileSystemInfo info)
     {
-        // TODO: Check access & existence of files 
-        
         CancellationToken token = _tokenSource!.Token;
-        
         token.ThrowIfCancellationRequested(); // Cancel
+
+        string name = info.FullName; // Exceptions: Security, PathTooLong
         if (info is FileInfo fileInfo)
         {
-            // Append file nodes with their sizes
+            // Append file nodes with their sizes.
             if (fileInfo.LinkTarget == null)
             {
-                FileNode fileNode = new(fileInfo.FullName, fileInfo.Length);
+                long size = fileInfo.Length; // Exceptions: FileNotFound, IO
+                FileNode fileNode = new(name, size);
                 root.Children.Add(fileNode);
             }
         }
-        else if (info is DirectoryInfo dirInfo)
+        else if (info is DirectoryInfo)
         {
-            // Add new directory node
-            FileTree dirNode = new(dirInfo.FullName, new List<FileNode>());
+            // Add new directory node.
+            FileTree dirNode = new(name, new List<FileNode>());
             root.Children.Add(dirNode);
 
-            // Enqueue task
+            // Enqueue task.
             Task scanningTask = new(ScanningTaskCallback, dirNode, token);
             _queue!.Enqueue(scanningTask);
         }
