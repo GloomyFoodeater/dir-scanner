@@ -1,6 +1,6 @@
-﻿using Scanner.Core;
+﻿using Scanner.Core.Models;
 
-namespace Scanner.Core;
+namespace Scanner.Core.Interfaces;
 
 public interface IDirScanner
 {
