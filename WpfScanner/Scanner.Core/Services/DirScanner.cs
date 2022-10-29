@@ -58,51 +58,49 @@ public class DirScanner : IDirScanner
 
     private void ScanningTaskCallback(object? param)
     {
-        // TODO: Validate root
-        // TODO: Files & dirs in one foreach
-        
         var root = (FileTree)param!;
         CancellationToken token = _tokenSource!.Token;
         
         // Get files and directories
         DirectoryInfo rootInfo = new(root.Name);
-        FileInfo[] fileInfos;
-        DirectoryInfo[] dirInfos;
+        FileSystemInfo[] fileSystemInfos;
         try
         {
-            fileInfos = rootInfo.GetFiles();
-            token.ThrowIfCancellationRequested(); // Cancel
-            dirInfos = rootInfo.GetDirectories();
+            fileSystemInfos = rootInfo.GetFileSystemInfos();
         }
-        catch(OperationCanceledException)
+        catch (DirectoryNotFoundException)
         {
-            // Rethrow cancellation
-            throw;
-        }
-        catch (Exception)
-        {
-            // Root directory did not exist or access error
+            // Root directory did not exist
             _semaphore!.Release();
             return;
         }
 
-        // Append file nodes with their sizes
-        foreach (var fileInfo in fileInfos)
+        // Iterate over files
+        foreach (var info in fileSystemInfos) 
+            HandleFile(root, info);
+
+        _semaphore!.Release();
+    }
+
+    private void HandleFile(FileTree root, FileSystemInfo info)
+    {
+        // TODO: Check access & existence of files 
+        
+        CancellationToken token = _tokenSource!.Token;
+        
+        token.ThrowIfCancellationRequested(); // Cancel
+        if (info is FileInfo fileInfo)
         {
-            token.ThrowIfCancellationRequested(); // Cancel
+            // Append file nodes with their sizes
             if (fileInfo.LinkTarget == null)
             {
                 FileNode fileNode = new(fileInfo.FullName, fileInfo.Length);
                 root.Children.Add(fileNode);
             }
         }
-
-        // Append dir nodes and enqueue tasks
-        foreach (var dirInfo in dirInfos)
+        else if (info is DirectoryInfo dirInfo)
         {
-            token.ThrowIfCancellationRequested(); // Cancel
-            
-            // Add new node to tree 
+            // Add new directory node
             FileTree dirNode = new(dirInfo.FullName, new List<FileNode>());
             root.Children.Add(dirNode);
 
@@ -110,7 +108,5 @@ public class DirScanner : IDirScanner
             Task scanningTask = new(ScanningTaskCallback, dirNode, token);
             _queue!.Enqueue(scanningTask);
         }
-
-        _semaphore!.Release();
     }
 }
