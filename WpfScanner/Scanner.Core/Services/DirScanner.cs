@@ -1,4 +1,5 @@
 ﻿using System.Collections.Concurrent;
+using System.Diagnostics;
 using System.Security;
 using Scanner.Core.Interfaces;
 using Scanner.Core.Models;
@@ -22,19 +23,9 @@ public class DirScanner : IDirScanner
     public FileTree Scan(string sourcePath)
     {
         // Validate source & get full path.
-        try
-        {
-            sourcePath = Path.GetFullPath(sourcePath);
-        }
-        catch (SecurityException)
-        {
-            throw new SecurityException($"Given path {sourcePath} was not accessible");
-        }
-        catch
-        {
-            // Exceptions: ArgumentNull, Argument, PathTooLong
-            throw new ArgumentException($"Failed to restore full path from {sourcePath}");
-        }
+        if (!Directory.Exists(sourcePath))
+            throw new ArgumentException($"Directory '{sourcePath}' did not exist");
+        sourcePath = Path.GetFullPath(sourcePath); // Exceptions: ArgumentNull, Argument, PathTooLong, Security
 
         // Init data for multithreading.
         _tokenSource = new();
@@ -66,21 +57,21 @@ public class DirScanner : IDirScanner
         {
             // Get files.
             DirectoryInfo rootInfo = new(root.Path); // Exceptions: Security, Argument, ArgumentNull, PathTooLong
-            var fileSystemInfos = rootInfo.GetFileSystemInfos(); // Exceptions: DirectoryNotFoundException
+            var fileSystemInfos = rootInfo.GetFileSystemInfos(); // Exceptions: DirectoryNotFound
 
             // Iterate over files.
             foreach (var info in fileSystemInfos)
-                ProcessFile(root, info);
+                ProcessFile(root, info); // Exceptions: OperationCanceled
         }
         catch (OperationCanceledException)
         {
             // Task was cancelled via cancellation token.
             throw;
         }
-        catch
+        catch (Exception e)
         {
             // Exceptions: Security, Argument, ArgumentNull, DirectoryNotFound, PathTooLong, FileNotFound, IO
-            // Ignore.
+            Debug.WriteLine(e);
         }
         finally
         {
@@ -94,29 +85,36 @@ public class DirScanner : IDirScanner
         token.ThrowIfCancellationRequested(); // Cancel
 
         var children = (root.Children as ConcurrentBag<FileNode>)!;
-
-        var name = info.FullName; // Exceptions: Security, PathTooLong
-        switch (info)
+        try
         {
-            case FileInfo { LinkTarget: null } fileInfo:
+            var name = info.FullName; // Exceptions: Security, PathTooLong
+            switch (info)
             {
-                // Append file nodes with their sizes.
-                var size = fileInfo.Length; // Exceptions: FileNotFound, IO
-                FileNode fileNode = new(name, size);
-                children.Add(fileNode);
-                break;
-            }
-            case DirectoryInfo:
-            {
-                // Add new directory node.
-                FileTree dirNode = new(name, new ConcurrentBag<FileNode>());
-                children.Add(dirNode);
+                case FileInfo { LinkTarget: null } fileInfo:
+                {
+                    // Append file nodes with their sizes.
+                    var size = fileInfo.Length; // Exceptions: FileNotFound, IO
+                    FileNode fileNode = new(name, size);
+                    children.Add(fileNode);
+                    break;
+                }
+                case DirectoryInfo:
+                {
+                    // Add new directory node.
+                    FileTree dirNode = new(name, new ConcurrentBag<FileNode>());
+                    children.Add(dirNode);
 
-                // Enqueue task.
-                Task scanningTask = new(ScanningTaskCallback, dirNode, token);
-                _queue!.Enqueue(scanningTask);
-                break;
+                    // Enqueue task.
+                    Task scanningTask = new(ScanningTaskCallback, dirNode, token);
+                    _queue!.Enqueue(scanningTask);
+                    break;
+                }
             }
+        }
+        catch (Exception e)
+        {
+            // Exceptions: FileNotFound, IO, Security, PathTooLong
+            Debug.WriteLine(e);
         }
     }
 }
