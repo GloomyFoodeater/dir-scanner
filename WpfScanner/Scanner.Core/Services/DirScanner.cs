@@ -48,23 +48,16 @@ public class DirScanner : IDirScanner
 
         // Loop over queue.
         while (_semaphore.CurrentCount != _maxRunningThreads || !_queue.IsEmpty)
-        {
-            _queue.TryDequeue(out scanningTask);
-            if (scanningTask != null)
+            if (_queue.TryDequeue(out scanningTask))
             {
                 _semaphore.Wait();
                 scanningTask.Start();
             }
-        }
 
         return root;
     }
 
-    public void Cancel()
-    {
-        // Cancel via token.
-        _tokenSource?.Cancel();
-    }
+    public void Cancel() => _tokenSource?.Cancel(); // Cancel via token
 
     private void ScanningTaskCallback(object? param)
     {
@@ -102,23 +95,28 @@ public class DirScanner : IDirScanner
 
         var children = (root.Children as ConcurrentBag<FileNode>)!;
 
-        string name = info.FullName; // Exceptions: Security, PathTooLong
-        if (info is FileInfo fileInfo && fileInfo.LinkTarget == null)
+        var name = info.FullName; // Exceptions: Security, PathTooLong
+        switch (info)
         {
-            // Append file nodes with their sizes.
-            var size = fileInfo.Length; // Exceptions: FileNotFound, IO
-            FileNode fileNode = new(name, size);
-            children.Add(fileNode);
-        }
-        else if (info is DirectoryInfo)
-        {
-            // Add new directory node.
-            FileTree dirNode = new(name, new ConcurrentBag<FileNode>());
-            children.Add(dirNode);
+            case FileInfo { LinkTarget: null } fileInfo:
+            {
+                // Append file nodes with their sizes.
+                var size = fileInfo.Length; // Exceptions: FileNotFound, IO
+                FileNode fileNode = new(name, size);
+                children.Add(fileNode);
+                break;
+            }
+            case DirectoryInfo:
+            {
+                // Add new directory node.
+                FileTree dirNode = new(name, new ConcurrentBag<FileNode>());
+                children.Add(dirNode);
 
-            // Enqueue task.
-            Task scanningTask = new(ScanningTaskCallback, dirNode, token);
-            _queue!.Enqueue(scanningTask);
+                // Enqueue task.
+                Task scanningTask = new(ScanningTaskCallback, dirNode, token);
+                _queue!.Enqueue(scanningTask);
+                break;
+            }
         }
     }
 }
