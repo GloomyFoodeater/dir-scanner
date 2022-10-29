@@ -4,7 +4,7 @@ namespace Scanner.Core.Interfaces;
 
 public interface IDirScanner
 {
-    FileTree Start(string source);
-    
+    FileTree Scan(string sourcePath);
+
     void Cancel();
 }

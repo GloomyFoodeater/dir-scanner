@@ -2,15 +2,16 @@
 
 public class FileTree : FileNode
 {
-    public FileTree(string name, IList<FileNode> children) : base(name, 0) => Children = children;
+    public FileTree(string path, IEnumerable<FileNode> children) : base(path) => Children = children;
 
-    public IList<FileNode> Children { get; }
+    public IEnumerable<FileNode> Children { get; }
 
     public void RecalculateSize()
     {
         Size = 0;
         foreach (var child in Children)
         {
+            // Recursive recalculation.
             if (child is FileTree fileTree)
                 fileTree.RecalculateSize();
             Size += child.Size;

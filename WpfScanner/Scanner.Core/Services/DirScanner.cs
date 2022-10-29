@@ -19,21 +19,21 @@ public class DirScanner : IDirScanner
         _maxRunningThreads = maxRunningThreads;
     }
 
-    public FileTree Start(string source)
+    public FileTree Scan(string sourcePath)
     {
         // Validate source & get full path.
         try
         {
-            source = Path.GetFullPath(source);
+            sourcePath = Path.GetFullPath(sourcePath);
         }
         catch (SecurityException)
         {
-            throw new SecurityException($"Given path {source} was not accessible");
+            throw new SecurityException($"Given path {sourcePath} was not accessible");
         }
         catch
         {
-            // Exceptions: ArgumentNull, Argument, PathTooLong exceptions
-            throw new ArgumentException($"Failed to restore full path from {source}");
+            // Exceptions: ArgumentNull, Argument, PathTooLong
+            throw new ArgumentException($"Failed to restore full path from {sourcePath}");
         }
 
         // Init data for multithreading.
@@ -42,7 +42,7 @@ public class DirScanner : IDirScanner
         _queue = new();
 
         // Enqueue task for root.
-        FileTree root = new(source, new List<FileNode>());
+        FileTree root = new(sourcePath, new ConcurrentBag<FileNode>());
         Task? scanningTask = new(ScanningTaskCallback, root, _tokenSource.Token);
         _queue.Enqueue(scanningTask);
 
@@ -72,12 +72,12 @@ public class DirScanner : IDirScanner
         try
         {
             // Get files.
-            DirectoryInfo rootInfo = new(root.Name); // Exceptions: Security, Argument, ArgumentNull, PathTooLong
+            DirectoryInfo rootInfo = new(root.Path); // Exceptions: Security, Argument, ArgumentNull, PathTooLong
             var fileSystemInfos = rootInfo.GetFileSystemInfos(); // Exceptions: DirectoryNotFoundException
 
             // Iterate over files.
             foreach (var info in fileSystemInfos)
-                HandleFile(root, info);
+                ProcessFile(root, info);
         }
         catch (OperationCanceledException)
         {
@@ -95,27 +95,26 @@ public class DirScanner : IDirScanner
         }
     }
 
-    private void HandleFile(FileTree root, FileSystemInfo info)
+    private void ProcessFile(FileTree root, FileSystemInfo info)
     {
-        CancellationToken token = _tokenSource!.Token;
+        var token = _tokenSource!.Token;
         token.ThrowIfCancellationRequested(); // Cancel
 
+        var children = (root.Children as ConcurrentBag<FileNode>)!;
+
         string name = info.FullName; // Exceptions: Security, PathTooLong
-        if (info is FileInfo fileInfo)
+        if (info is FileInfo fileInfo && fileInfo.LinkTarget == null)
         {
             // Append file nodes with their sizes.
-            if (fileInfo.LinkTarget == null)
-            {
-                long size = fileInfo.Length; // Exceptions: FileNotFound, IO
-                FileNode fileNode = new(name, size);
-                root.Children.Add(fileNode);
-            }
+            var size = fileInfo.Length; // Exceptions: FileNotFound, IO
+            FileNode fileNode = new(name, size);
+            children.Add(fileNode);
         }
         else if (info is DirectoryInfo)
         {
             // Add new directory node.
-            FileTree dirNode = new(name, new List<FileNode>());
-            root.Children.Add(dirNode);
+            FileTree dirNode = new(name, new ConcurrentBag<FileNode>());
+            children.Add(dirNode);
 
             // Enqueue task.
             Task scanningTask = new(ScanningTaskCallback, dirNode, token);

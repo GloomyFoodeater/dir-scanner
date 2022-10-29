@@ -2,13 +2,11 @@
 
 public class FileNode
 {
-    public FileNode(string name, long size)
-    {
-        Name = name;
-        Size = size;
-    }
+    public FileNode(string path, long size) : this(path) => Size = size;
 
-    public string Name { get; }
-    
+    protected FileNode(string path) => Path = path;
+
+    public string Path { get; }
+
     public long Size { get; protected set; }
 }
