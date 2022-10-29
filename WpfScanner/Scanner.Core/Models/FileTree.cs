@@ -6,13 +6,14 @@ public class FileTree : FileNode
 
     public IList<FileNode> Children { get; }
 
-    public long RecalculateSize()
+    public void RecalculateSize()
     {
         Size = 0;
         foreach (var child in Children)
+        {
             if (child is FileTree fileTree)
-                Size += fileTree.RecalculateSize();
-
-        return Size;
+                fileTree.RecalculateSize();
+            Size += child.Size;
+        }
     }
 }
