@@ -10,30 +10,54 @@ internal static class FileTreeExtensions
         var selfTree = self as FileTree;
         var otherTree = other as FileTree;
 
-        bool areBothTrees = selfTree != null && otherTree != null;
-        bool areEqual = (areBothTrees || selfTree == null && otherTree == null)
-                        && self.Path == other.Path
-                        && self.Size == other.Size;
+        // Check nodes relation.
+        var areBothTrees = selfTree != null && otherTree != null;
+        var areEqual = (areBothTrees || (selfTree == null && otherTree == null))
+                       && self.Path == other.Path
+                       && self.Size == other.Size;
 
 
-        // Both nodes are not leafs.
+        // Sort children by paths, zip them and check their relation.
         if (areBothTrees)
-        {
-            // Sort children by paths & zip them into one collection.
-            var zippedCollection = selfTree!.Children.OrderBy(node => node.Path)
-                .Zip(otherTree!.Children.OrderBy(node => node.Path));
-
-            // Check if all children are equal.
-            foreach (var (selfChild, otherChild) in zippedCollection)
-                areEqual &= selfChild.IsEqualTo(otherChild);
-        }
+            areEqual = areEqual && selfTree!
+                .Children.OrderBy(node => node.Path)
+                .Zip(otherTree!.Children.OrderBy(node => node.Path))
+                .All(pair => pair.First.IsEqualTo(pair.Second));
 
         return areEqual;
     }
 
     public static bool IsSubsetOf(this FileNode self, FileNode other)
     {
-        // TODO: Implement this.
-        throw new NotImplementedException();
+        // Convert nodes to trees.
+        var selfTree = self as FileTree;
+        var otherTree = other as FileTree;
+
+        // Check nodes relation.
+        var areBothTrees = selfTree != null && otherTree != null;
+        var isSubset = (areBothTrees || (selfTree == null && otherTree == null))
+                       && self.Path == other.Path
+                       && self.Size <= other.Size;
+
+        if (areBothTrees)
+        {
+            try
+            {
+                // Check if all children nodes in self are in relation with some child node of other.  
+                isSubset = isSubset && selfTree!.Children
+                    .All(selfChild => selfChild
+                        .IsSubsetOf(otherTree!.Children
+                            .First(otherChild => selfChild.Path == otherChild.Path &&
+                                                 (selfChild is FileTree && otherChild is FileTree ||
+                                                  selfChild is not FileTree && otherChild is not FileTree))));
+            }
+            catch (InvalidOperationException)
+            {
+                // First() did not found suitable otherChild.
+                isSubset = false;
+            }
+        }
+
+        return isSubset;
     }
 }
