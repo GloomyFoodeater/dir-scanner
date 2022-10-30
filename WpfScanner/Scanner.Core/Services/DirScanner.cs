@@ -45,8 +45,9 @@ public class DirScanner : IDirScanner
                     _semaphore.Wait(_tokenSource.Token);
                     scanningTask.Start();
                 }
-                catch (OperationCanceledException)
+                catch
                 {
+                    // Exceptions: OperationCancelled, InvalidOperation 
                     break;
                 }
             }
