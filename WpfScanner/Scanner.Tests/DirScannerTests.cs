@@ -1,7 +1,13 @@
+using Scanner.Core.Services;
+using Scanner.Tests.DirMakers;
+using Scanner.Tests.Static;
+
 namespace Scanner.Tests;
 
 public class DirScannerTests
 {
+    private const int ThreadCount = 5;
+
     [Fact]
     public void ParamsValidation()
     {
@@ -12,8 +18,18 @@ public class DirScannerTests
     [Fact]
     public void EmptyDirectory()
     {
-        // TODO: Implement this.
-        throw new NotImplementedException();
+        // Arrange
+        const string path = "test-empty";
+        var dirScanner = new DirScanner(ThreadCount);
+        var dirMaker = new EmptyDirMaker();
+
+        // Act
+        var expectedTree = dirMaker.Create(path);
+        var actualTree = dirScanner.Scan(path);
+
+        // Assert
+        Assert.NotNull(actualTree);
+        Assert.True(actualTree.IsEqualTo(expectedTree));
     }
 
     [Fact]
