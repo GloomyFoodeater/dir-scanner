@@ -93,12 +93,22 @@ public class DirScannerTests
         // Assert
         Assert.True(actualTree.IsEqualTo(expectedTree));
     }
-
+    
+    // Requires admin privileges.
     [Fact]
     public void DirectoryWithLinks()
     {
-        // TODO: Implement this.
-        throw new NotImplementedException();
+        // Arrange
+        var path = "test-links";
+        var dirScanner = new DirScanner(ThreadCount);
+        var dirMaker = new LinksDirMaker();
+        
+        // Act
+        var expectedTree = dirMaker.Create(path);
+        var actualTree = dirScanner.Scan(path);
+        
+        // Assert
+        Assert.True(actualTree.IsEqualTo(expectedTree));
     }
 
     [Fact]

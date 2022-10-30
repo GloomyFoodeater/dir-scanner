@@ -98,7 +98,7 @@ public class DirScanner : IDirScanner
                     children.Add(fileNode);
                     break;
                 }
-                case DirectoryInfo:
+                case DirectoryInfo { LinkTarget: null }:
                 {
                     // Add new directory node.
                     FileTree dirNode = new(name, new ConcurrentBag<FileNode>());
