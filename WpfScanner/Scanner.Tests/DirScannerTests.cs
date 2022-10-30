@@ -1,13 +1,20 @@
+using System.Diagnostics;
 using Scanner.Core.Models;
 using Scanner.Core.Services;
 using Scanner.Tests.DirMakers;
 using Scanner.Tests.Static;
+using Xunit.Abstractions;
+using Xunit.Sdk;
 
 namespace Scanner.Tests;
 
 public class DirScannerTests
 {
-    private const int ThreadCount = 5;
+    private readonly ITestOutputHelper _helper;
+
+    private const int ThreadCount = 100;
+
+    public DirScannerTests(ITestOutputHelper helper) => _helper = helper;
 
     [Fact]
     public void ParamsValidation()
@@ -164,7 +171,40 @@ public class DirScannerTests
     [Fact]
     public void ScanningCancellation()
     {
-        // TODO: Implement this.
-        throw new NotImplementedException();
+        // Arrange
+        var path = "C:\\Users";
+        DirScanner dirScanner = new(ThreadCount);
+        Stopwatch stopwatch = new();
+        
+        // Act
+        FileTree? subTree = null;
+        var scanningTask = Task.Run(() =>
+        {
+            stopwatch.Start();
+            subTree = dirScanner.Scan(path);
+            stopwatch.Stop();
+        });
+        Thread.Sleep(500);
+        dirScanner.Cancel();
+        scanningTask.Wait();
+        subTree?.RecalculateSize();
+        
+        var dtSub = stopwatch.ElapsedMilliseconds;
+        
+        stopwatch.Start();
+        FileTree supTree = dirScanner.Scan(path);
+        stopwatch.Stop();
+        var dtSup = stopwatch.ElapsedMilliseconds;
+        
+        supTree.RecalculateSize();
+
+        // Assert
+        Assert.NotNull(subTree);
+        Assert.True(subTree!.IsSubsetOf(supTree));
+
+        // Debug output
+        _helper.WriteLine($"{nameof(ScanningCancellation)} test results:");
+        _helper.WriteLine($"\t<Sub tree>: {subTree!.Size}b, {dtSub}ms");
+        _helper.WriteLine($"\t<Sup tree>: {supTree.Size}b, {dtSup}ms");
     }
 }
