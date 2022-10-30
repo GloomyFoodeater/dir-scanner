@@ -81,8 +81,17 @@ public class DirScannerTests
     [Fact]
     public void MultiLayeredDirectory()
     {
-        // TODO: Implement this.
-        throw new NotImplementedException();
+        // Arrange
+        var path = "test-multi-layered-files";
+        var dirScanner = new DirScanner(ThreadCount);
+        var dirMaker = new MultiLayeredDirMaker();
+        
+        // Act
+        var expectedTree = dirMaker.Create(path);
+        var actualTree = dirScanner.Scan(path);
+        
+        // Assert
+        Assert.True(actualTree.IsEqualTo(expectedTree));
     }
 
     [Fact]
