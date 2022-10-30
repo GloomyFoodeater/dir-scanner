@@ -1,3 +1,4 @@
+using Scanner.Core.Models;
 using Scanner.Core.Services;
 using Scanner.Tests.DirMakers;
 using Scanner.Tests.Static;
@@ -17,15 +18,15 @@ public class DirScannerTests
         var dirMaker = new OneFileDirMaker();
         var resultTree = dirMaker.Create(path);
         var filePath = resultTree.Children.First().Path;
-        
+
         // Act & assert
-        
+
         // Invalid number of threads.
         Assert.Throws<ArgumentException>(() => new DirScanner(0));
-        
+
         // Nonexistent directory to scan.
         Assert.Throws<ArgumentException>(() => dirScanner.Scan(@$"{path}\non-existent"));
-        
+
         // Given path exists, but was not path to directory.
         Assert.Throws<ArgumentException>(() => dirScanner.Scan(filePath));
     }
@@ -53,11 +54,11 @@ public class DirScannerTests
         var path = "test-one-file";
         var dirScanner = new DirScanner(ThreadCount);
         var dirMaker = new OneFileDirMaker();
-        
+
         // Act
         var expectedTree = dirMaker.Create(path);
         var actualTree = dirScanner.Scan(path);
-        
+
         // Assert
         Assert.True(actualTree.IsEqualTo(expectedTree));
     }
@@ -69,11 +70,11 @@ public class DirScannerTests
         var path = "test-many-files";
         var dirScanner = new DirScanner(ThreadCount);
         var dirMaker = new ManyFilesDirMaker();
-        
+
         // Act
         var expectedTree = dirMaker.Create(path);
         var actualTree = dirScanner.Scan(path);
-        
+
         // Assert
         Assert.True(actualTree.IsEqualTo(expectedTree));
     }
@@ -85,15 +86,15 @@ public class DirScannerTests
         var path = "test-multi-layered-files";
         var dirScanner = new DirScanner(ThreadCount);
         var dirMaker = new MultiLayeredDirMaker();
-        
+
         // Act
         var expectedTree = dirMaker.Create(path);
         var actualTree = dirScanner.Scan(path);
-        
+
         // Assert
         Assert.True(actualTree.IsEqualTo(expectedTree));
     }
-    
+
     // Requires admin privileges.
     [Fact]
     public void DirectoryWithLinks()
@@ -102,13 +103,62 @@ public class DirScannerTests
         var path = "test-links";
         var dirScanner = new DirScanner(ThreadCount);
         var dirMaker = new LinksDirMaker();
-        
+
         // Act
         var expectedTree = dirMaker.Create(path);
         var actualTree = dirScanner.Scan(path);
-        
+
         // Assert
         Assert.True(actualTree.IsEqualTo(expectedTree));
+    }
+
+    [Fact]
+    public void TreeResize()
+    {
+        // Arrange
+        var tree = new FileTree("", new List<FileNode>
+        {
+            new("", 10),
+            new("", 20),
+            new("", 30),
+            new FileTree("",
+                new List<FileNode>
+                {
+                    new("", 20),
+                    new("", 15),
+                    new FileTree("", new List<FileNode>())
+                }),
+            new FileTree("",
+                new List<FileNode>
+                {
+                    new("", 3),
+                    new("", 22),
+                    new FileTree("",
+                        new List<FileNode>
+                        {
+                            new("", 3),
+                            new("", 22),
+                            new FileTree("",
+                                new List<FileNode>
+                                {
+                                    new("", 3),
+                                    new("", 22)
+                                }),
+                            new FileTree("",
+                                new List<FileNode>
+                                {
+                                    new("", 3),
+                                    new("", 22)
+                                })
+                        })
+                })
+        });
+
+        // Act
+        tree.RecalculateSize();
+
+        // Assert
+        Assert.Equal(195, tree.Size);
     }
 
     [Fact]
