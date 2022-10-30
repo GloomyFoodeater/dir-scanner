@@ -65,8 +65,17 @@ public class DirScannerTests
     [Fact]
     public void ManyFilesDirectory()
     {
-        // TODO: Implement this.
-        throw new NotImplementedException();
+        // Arrange
+        var path = "test-many-files";
+        var dirScanner = new DirScanner(ThreadCount);
+        var dirMaker = new ManyFilesDirMaker();
+        
+        // Act
+        var expectedTree = dirMaker.Create(path);
+        var actualTree = dirScanner.Scan(path);
+        
+        // Assert
+        Assert.True(actualTree.IsEqualTo(expectedTree));
     }
 
     [Fact]
