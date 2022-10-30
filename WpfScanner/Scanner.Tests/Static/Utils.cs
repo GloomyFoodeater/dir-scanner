@@ -1,4 +1,4 @@
-﻿namespace Scanner.Tests.DirMakers;
+﻿namespace Scanner.Tests.Static;
 
 internal static class Utils
 {

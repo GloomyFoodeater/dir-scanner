@@ -1,6 +1,6 @@
 ﻿using Scanner.Core.Models;
 using Scanner.Tests.Interfaces;
-using static Scanner.Tests.DirMakers.Utils;
+using static Scanner.Tests.Static.Utils;
 
 namespace Scanner.Tests.DirMakers;
 
