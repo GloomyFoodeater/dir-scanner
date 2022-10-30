@@ -4,15 +4,18 @@ using static Scanner.Tests.DirMakers.Utils;
 
 namespace Scanner.Tests.DirMakers;
 
-internal class EmptyDirMaker : IDirMaker
+internal class OneFileDirMaker : IDirMaker
 {
     public FileTree Create(string destinationPath)
     {
         destinationPath = Path.GetFullPath(destinationPath);
+        var size = 100;
+        var filePath = $"{destinationPath}\\1.txt";
         
         RemoveDir(destinationPath);
         Directory.CreateDirectory(destinationPath);
+        MakeFile(filePath, size);
         
-        return new FileTree(destinationPath, new List<FileNode>());
+        return new FileTree(destinationPath, new List<FileNode> { new (filePath, size) });
     }
 }

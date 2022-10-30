@@ -11,8 +11,23 @@ public class DirScannerTests
     [Fact]
     public void ParamsValidation()
     {
-        // TODO: Implement this.
-        throw new NotImplementedException();
+        // Arrange
+        var path = "test-invalid";
+        var dirScanner = new DirScanner(1);
+        var dirMaker = new OneFileDirMaker();
+        var resultTree = dirMaker.Create(path);
+        var filePath = resultTree.Children.First().Path;
+        
+        // Act & assert
+        
+        // Invalid number of threads.
+        Assert.Throws<ArgumentException>(() => new DirScanner(0));
+        
+        // Nonexistent directory to scan.
+        Assert.Throws<ArgumentException>(() => dirScanner.Scan(@$"{path}\non-existent"));
+        
+        // Given path exists, but was not path to directory.
+        Assert.Throws<ArgumentException>(() => dirScanner.Scan(filePath));
     }
 
     [Fact]
@@ -28,15 +43,23 @@ public class DirScannerTests
         var actualTree = dirScanner.Scan(path);
 
         // Assert
-        Assert.NotNull(actualTree);
         Assert.True(actualTree.IsEqualTo(expectedTree));
     }
 
     [Fact]
     public void OneFileDirectory()
     {
-        // TODO: Implement this.
-        throw new NotImplementedException();
+        // Arrange
+        var path = "test-one-file";
+        var dirScanner = new DirScanner(ThreadCount);
+        var dirMaker = new OneFileDirMaker();
+        
+        // Act
+        var expectedTree = dirMaker.Create(path);
+        var actualTree = dirScanner.Scan(path);
+        
+        // Assert
+        Assert.True(actualTree.IsEqualTo(expectedTree));
     }
 
     [Fact]
