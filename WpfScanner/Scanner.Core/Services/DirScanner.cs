@@ -1,6 +1,5 @@
 ﻿using System.Collections.Concurrent;
 using System.Diagnostics;
-using System.Security;
 using Scanner.Core.Interfaces;
 using Scanner.Core.Models;
 
@@ -41,8 +40,15 @@ public class DirScanner : IDirScanner
         while (_semaphore.CurrentCount != _maxRunningThreads || !_queue.IsEmpty)
             if (_queue.TryDequeue(out scanningTask))
             {
-                _semaphore.Wait();
-                scanningTask.Start();
+                try
+                {
+                    _semaphore.Wait(_tokenSource.Token);
+                    scanningTask.Start();
+                }
+                catch (OperationCanceledException)
+                {
+                    break;
+                }
             }
 
         return root;
