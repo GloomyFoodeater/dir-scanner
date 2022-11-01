@@ -6,6 +6,12 @@
         xmlns:vm="clr-namespace:WpfApp.ViewModel"
         mc:Ignorable="d"
         Title="MainWindow" Height="450" Width="800">
+    <Window.Resources>
+        <Style x:Key="TreeViewItemStyle" TargetType="TreeViewItem" />
+        <Style x:Key="RootTreeViewItemStyle" TargetType="TreeViewItem" BasedOn="{StaticResource TreeViewItemStyle}">
+            <Setter Property="IsExpanded" Value="True" />
+        </Style>
+    </Window.Resources>
     <Window.DataContext>
         <vm:AppViewModel />
     </Window.DataContext>
@@ -14,19 +20,53 @@
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="3*" /><ColumnDefinition Width="1*" />
             </Grid.ColumnDefinitions>
-            <TextBox Grid.Column="0" Text="{Binding SelectedPath, UpdateSourceTrigger=PropertyChanged}" />
+            <TextBox Grid.Column="0">
+                <TextBox.Text>
+                    <Binding Path="SelectedPath" UpdateSourceTrigger="PropertyChanged" />
+                </TextBox.Text>
+            </TextBox>
             <Button Grid.Column="1" Command="{Binding OpenCommand}">Open</Button>
         </Grid>
         <Grid DockPanel.Dock="Bottom">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition /><ColumnDefinition /><ColumnDefinition /><ColumnDefinition /><ColumnDefinition />
             </Grid.ColumnDefinitions>
-            <Button Grid.Column="1" Command="{Binding ScanCommand}" IsEnabled="{Binding !IsScanning, UpdateSourceTrigger=PropertyChanged}" Content="Scan" />
-            <Button Grid.Column="3" Command="{Binding CancelCommand}" IsEnabled="{Binding IsScanning}" Content="Stop" />
+            <Button>
+                <Button.Content>Scan</Button.Content>
+                <Grid.Column>1</Grid.Column>
+                <Button.IsEnabled>
+                    <Binding Path="!IsScanning" UpdateSourceTrigger="PropertyChanged" />
+                </Button.IsEnabled>
+                <Button.Command>
+                    <Binding Path="ScanCommand" />
+                </Button.Command>
+            </Button>
+            <Button>
+                <Button.Content>Stop</Button.Content>
+                <Grid.Column>3</Grid.Column>
+                <Button.IsEnabled>
+                    <Binding Path="IsScanning" />
+                </Button.IsEnabled>
+                <Button.Command>
+                    <Binding Path="CancelCommand" />
+                </Button.Command>
+            </Button>
         </Grid>
-        <TreeView ItemsSource="{Binding CurrentTree}">
+        <TreeView>
+            <TreeView.ItemContainerStyle>
+                <StaticResource ResourceKey="RootTreeViewItemStyle" />
+            </TreeView.ItemContainerStyle>
+            <TreeView.ItemsSource>
+                <Binding Path="CurrentTree" />
+            </TreeView.ItemsSource>
             <TreeView.ItemTemplate>
-                <HierarchicalDataTemplate ItemsSource="{Binding Children}">
+                <HierarchicalDataTemplate>
+                    <HierarchicalDataTemplate.ItemContainerStyle>
+                        <StaticResource ResourceKey="TreeViewItemStyle" />
+                    </HierarchicalDataTemplate.ItemContainerStyle>
+                    <HierarchicalDataTemplate.ItemsSource>
+                        <Binding Path="Children" />
+                    </HierarchicalDataTemplate.ItemsSource>
                     <StackPanel Orientation="Horizontal">
                         <Image Width="20" Height="20">
                             <Image.Source>
@@ -37,9 +77,17 @@
                         <TextBlock Text="{Binding Name}" />
                         <Separator Width="15" Background="Red" />
                         <TextBlock Text=">(" />
-                        <TextBlock Text="{Binding Size, Converter={StaticResource DelimiterIntConverter}}" />
+                        <TextBlock>
+                            <TextBlock.Text>
+                                <Binding Path="Size" Converter="{StaticResource DelimiterIntConverter}" />
+                            </TextBlock.Text>
+                        </TextBlock>
                         <TextBlock Text=" bytes, " />
-                        <TextBlock Text="{Binding Proportion, Converter={StaticResource PercentageConverter}}" />
+                        <TextBlock>
+                            <TextBlock.Text>
+                                <Binding Path="Proportion" Converter="{StaticResource PercentageConverter}" />
+                            </TextBlock.Text>
+                        </TextBlock>
                         <TextBlock Text=")" />
                     </StackPanel>
                 </HierarchicalDataTemplate>

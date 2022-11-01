@@ -61,8 +61,7 @@ public sealed class AppViewModel : INotifyPropertyChanged
             {
                 _scanner.Cancel();
                 IsScanning = false;
-            },
-            canExecute: _ => IsScanning);
+            });
     }
 
     public ObservableCollection<TreeModel>? CurrentTree
