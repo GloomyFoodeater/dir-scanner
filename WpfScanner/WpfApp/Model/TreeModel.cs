@@ -10,6 +10,10 @@ public class TreeModel
     public TreeModel(FileNode originalNode)
     {
         Name = Path.GetFileName(originalNode.Path);
+        
+        // Empty name if path only contains drive.
+        if (Name == "")
+            Name = "/";
         Size = originalNode.Size;
         
         Children = new ObservableCollection<TreeModel>();
