@@ -3,10 +3,47 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:local="clr-namespace:WpfApp"
+        xmlns:vm="clr-namespace:WpfApp.ViewModel"
         mc:Ignorable="d"
         Title="MainWindow" Height="450" Width="800">
-    <Grid>
-
-    </Grid>
+    <Window.DataContext>
+        <vm:AppViewModel />
+    </Window.DataContext>
+    <DockPanel LastChildFill="True">
+        <Grid DockPanel.Dock="Top">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="3*" /><ColumnDefinition Width="1*" />
+            </Grid.ColumnDefinitions>
+            <TextBox Grid.Column="0" Text="{Binding SelectedPath}" />
+            <Button Grid.Column="1" Command="{Binding OpenCommand}" IsEnabled="True">Open</Button>
+        </Grid>
+        <Grid DockPanel.Dock="Bottom">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition /><ColumnDefinition /><ColumnDefinition /><ColumnDefinition /><ColumnDefinition />
+            </Grid.ColumnDefinitions>
+            <Button Grid.Column="1" Command="{Binding ScanCommand}">Scan</Button>
+            <Button Grid.Column="3" Command="{Binding CancelCommand}">Cancel</Button>
+        </Grid>
+        <TreeView ItemsSource="{Binding CurrentTree}">
+            <TreeView.ItemTemplate>
+                <HierarchicalDataTemplate ItemsSource="{Binding Children}">
+                    <StackPanel Orientation="Horizontal">
+                        <Image Width="20" Height="20">
+                            <Image.Source>
+                                <Binding Path="Icon" Converter="{StaticResource FileIconConverter}" />
+                            </Image.Source>
+                        </Image>
+                        <Separator Width="5" Background="Transparent" />
+                        <TextBlock Text="{Binding Name}" />
+                        <Separator Width="15" Background="Red" />
+                        <TextBlock Text=">(" />
+                        <TextBlock Text="{Binding Size, Converter={StaticResource DelimiterIntConverter}}" />
+                        <TextBlock Text=" bytes, " />
+                        <TextBlock Text="{Binding Proportion, Converter={StaticResource PercentageConverter}}" />
+                        <TextBlock Text=")" />
+                    </StackPanel>
+                </HierarchicalDataTemplate>
+            </TreeView.ItemTemplate>
+        </TreeView>
+    </DockPanel>
 </Window>
