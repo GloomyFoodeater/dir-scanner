@@ -1,4 +1,5 @@
-﻿using System.Collections.ObjectModel;
+﻿using System;
+using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.IO;
 using System.Runtime.CompilerServices;
@@ -36,11 +37,20 @@ public sealed class AppViewModel : INotifyPropertyChanged
                 Task.Run(() =>
                     {
                         _isScanning = true;
-                        var result = _scanner.Scan(_selectedPath!);
-                        _isScanning = false;
+                        try
+                        {
+                            var result = _scanner.Scan(_selectedPath!);
 
-                        // Wrap result with collection and tree model. 
-                        CurrentTree = new() { new(result) };
+                            // Wrap result with collection and tree model. 
+                            CurrentTree = new() { new(result) };
+                            SelectedPath = Path.GetFullPath(_selectedPath!);
+                        }
+                        catch (Exception e)
+                        {
+                            MessageBox.Show(e.Message, "Error", MessageBoxButtons.OK);
+                        }
+
+                        _isScanning = false;
                     }
                 );
             },
@@ -58,7 +68,7 @@ public sealed class AppViewModel : INotifyPropertyChanged
     public ObservableCollection<TreeModel>? CurrentTree
     {
         get => _currentTree;
-        set
+        private set
         {
             _currentTree = value;
             OnPropertyChanged();
@@ -70,7 +80,7 @@ public sealed class AppViewModel : INotifyPropertyChanged
         get => _selectedPath;
         set
         {
-            _selectedPath = value != null ? Path.GetFullPath(value) : value;
+            _selectedPath = value;
             OnPropertyChanged();
         }
     }
