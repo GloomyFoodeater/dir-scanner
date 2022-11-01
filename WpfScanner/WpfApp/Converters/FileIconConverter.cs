@@ -9,7 +9,7 @@ public class FileIconConverter : IValueConverter
 {
     public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
     {
-        return ((IconEnum)value) switch
+        return (IconEnum)value switch
         {
             IconEnum.Root => "Resources/root-ico.png",
             IconEnum.Directory => "Resources/directory-ico.png",

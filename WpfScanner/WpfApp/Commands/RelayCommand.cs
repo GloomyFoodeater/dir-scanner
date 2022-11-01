@@ -5,22 +5,21 @@ namespace WpfApp.Commands;
 
 public class RelayCommand : ICommand
 {
+    private readonly Func<object?, bool>? _canExecute;
     private readonly Action<object?> _execute;
 
-    private readonly Func<object?, bool>? _canExecute;
+
+    // Null canExecute is equal to always true function.
+    public RelayCommand(Action<object?> execute, Func<object?, bool>? canExecute = null)
+    {
+        _execute = execute;
+        _canExecute = canExecute;
+    }
 
     public event EventHandler? CanExecuteChanged
     {
         add => CommandManager.RequerySuggested += value;
         remove => CommandManager.RequerySuggested -= value;
-    }
-
-    
-    // Null is equal to always true function.
-    public RelayCommand(Action<object?> execute, Func<object?, bool>? canExecute = null)
-    {
-        _execute = execute;
-        _canExecute = canExecute;
     }
 
     public bool CanExecute(object? parameter) => _canExecute == null || _canExecute(parameter);

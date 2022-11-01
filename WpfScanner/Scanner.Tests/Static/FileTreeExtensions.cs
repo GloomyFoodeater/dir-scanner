@@ -40,7 +40,6 @@ internal static class FileTreeExtensions
                        && self.Size <= other.Size;
 
         if (areBothTrees)
-        {
             try
             {
                 // Check if all children nodes in self are in relation with some child node of other.  
@@ -56,7 +55,6 @@ internal static class FileTreeExtensions
                 // First() did not found suitable otherChild.
                 isSubset = false;
             }
-        }
 
         return isSubset;
     }

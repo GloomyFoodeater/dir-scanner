@@ -17,7 +17,7 @@ internal class LinksDirMaker : IDirMaker
         Directory.CreateSymbolicLink($@"{destinationPath}\{Path.GetFileName(destinationPath)}", destinationPath);
         File.CreateSymbolicLink($@"{destinationPath}\1_lnk.txt", $@"{destinationPath}\1.txt");
 
-        FileTree res = new FileTree(
+        var res = new FileTree(
             destinationPath,
             new List<FileNode> { new($@"{destinationPath}\1.txt", 100) });
         res.RecalculateSize();

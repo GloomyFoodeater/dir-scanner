@@ -18,7 +18,7 @@ internal class ManyFilesDirMaker : IDirMaker
         // Generating files & appending to children list.
         const int fileCount = 50;
         const int startSize = 50;
-        for (int i = 0; i < fileCount; i++)
+        for (var i = 0; i < fileCount; i++)
         {
             var filePath = $"{destinationPath}\\{i}.txt";
             var fileSize = i * startSize;

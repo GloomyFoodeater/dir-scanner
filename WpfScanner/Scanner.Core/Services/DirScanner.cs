@@ -8,9 +8,9 @@ namespace Scanner.Core.Services;
 public class DirScanner : IDirScanner
 {
     private readonly int _maxRunningThreads;
-    private CancellationTokenSource? _tokenSource;
-    private SemaphoreSlim? _semaphore;
     private ConcurrentQueue<Task>? _queue;
+    private SemaphoreSlim? _semaphore;
+    private CancellationTokenSource? _tokenSource;
 
     public DirScanner(int maxRunningThreads)
     {
@@ -39,7 +39,6 @@ public class DirScanner : IDirScanner
         // Loop over queue.
         while (_semaphore.CurrentCount != _maxRunningThreads || !_queue.IsEmpty)
             if (_queue.TryDequeue(out scanningTask))
-            {
                 try
                 {
                     _semaphore.Wait(_tokenSource.Token);
@@ -50,7 +49,6 @@ public class DirScanner : IDirScanner
                     // Exceptions: OperationCancelled, InvalidOperation 
                     break;
                 }
-            }
 
         root.RecalculateSize();
         return root;

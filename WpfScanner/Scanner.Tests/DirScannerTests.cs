@@ -9,11 +9,13 @@ namespace Scanner.Tests;
 
 public class DirScannerTests
 {
+    private const int ThreadCount = 100;
     private readonly ITestOutputHelper _helper;
 
-    private const int ThreadCount = 100;
-
-    public DirScannerTests(ITestOutputHelper helper) => _helper = helper;
+    public DirScannerTests(ITestOutputHelper helper)
+    {
+        _helper = helper;
+    }
 
     [Fact]
     public void ParamsValidation()
@@ -190,7 +192,7 @@ public class DirScannerTests
         var dtSub = stopwatch.ElapsedMilliseconds;
 
         stopwatch.Start();
-        FileTree supTree = dirScanner.Scan(path);
+        var supTree = dirScanner.Scan(path);
         stopwatch.Stop();
         var dtSup = stopwatch.ElapsedMilliseconds;
 
