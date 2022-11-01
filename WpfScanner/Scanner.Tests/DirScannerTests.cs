@@ -4,7 +4,6 @@ using Scanner.Core.Services;
 using Scanner.Tests.DirMakers;
 using Scanner.Tests.Static;
 using Xunit.Abstractions;
-using Xunit.Sdk;
 
 namespace Scanner.Tests;
 
@@ -175,7 +174,7 @@ public class DirScannerTests
         var path = "C:\\Users";
         DirScanner dirScanner = new(ThreadCount);
         Stopwatch stopwatch = new();
-        
+
         // Act
         FileTree? subTree = null;
         var scanningTask = Task.Run(() =>
@@ -187,16 +186,13 @@ public class DirScannerTests
         Thread.Sleep(500);
         dirScanner.Cancel();
         scanningTask.Wait();
-        subTree?.RecalculateSize();
-        
+
         var dtSub = stopwatch.ElapsedMilliseconds;
-        
+
         stopwatch.Start();
         FileTree supTree = dirScanner.Scan(path);
         stopwatch.Stop();
         var dtSup = stopwatch.ElapsedMilliseconds;
-        
-        supTree.RecalculateSize();
 
         // Assert
         Assert.NotNull(subTree);

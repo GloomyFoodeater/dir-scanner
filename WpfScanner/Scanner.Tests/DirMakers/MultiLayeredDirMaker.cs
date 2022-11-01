@@ -30,7 +30,9 @@ internal class MultiLayeredDirMaker : IDirMaker
             }
         }
 
-        return new FileTree(rootPath, children);
+        FileTree res =  new(rootPath, children);
+        res.RecalculateSize();
+        return res;
     }
     
     public FileTree Create(string destinationPath)

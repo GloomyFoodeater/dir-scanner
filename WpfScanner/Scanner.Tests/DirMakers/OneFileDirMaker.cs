@@ -16,6 +16,8 @@ internal class OneFileDirMaker : IDirMaker
         Directory.CreateDirectory(destinationPath);
         MakeFile(filePath, size);
         
-        return new FileTree(destinationPath, new List<FileNode> { new (filePath, size) });
+        FileTree res = new (destinationPath, new List<FileNode> { new (filePath, size) });
+        res.RecalculateSize();
+        return res;
     }
 }

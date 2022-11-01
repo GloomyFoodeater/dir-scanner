@@ -27,6 +27,8 @@ internal class ManyFilesDirMaker : IDirMaker
             children.Add(new(filePath, fileSize));
         }
 
-        return new FileTree(destinationPath, children);
+        FileTree res = new(destinationPath, children);
+        res.RecalculateSize();
+        return res;
     }
 }
