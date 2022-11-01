@@ -196,7 +196,7 @@ public class DirScannerTests
 
         // Assert
         Assert.NotNull(subTree);
-        Assert.True(subTree!.IsSubsetOf(supTree));
+        Assert.True(subTree!.IsLesserThan(supTree));
 
         // Debug output
         _helper.WriteLine($"{nameof(ScanningCancellation)} test results:");

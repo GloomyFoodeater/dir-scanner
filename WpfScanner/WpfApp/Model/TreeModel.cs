@@ -10,12 +10,12 @@ public class TreeModel
     public TreeModel(FileNode originalNode)
     {
         Name = Path.GetFileName(originalNode.Path);
-        
+
         // Empty name if path only contains drive.
         if (Name == "")
             Name = "/";
         Size = originalNode.Size;
-        
+
         Children = new ObservableCollection<TreeModel>();
         if (originalNode is FileTree originalTree)
             foreach (var originalChild in originalTree.Children)
@@ -28,11 +28,10 @@ public class TreeModel
 
     public string Name { get; }
     public long Size { get; }
-    
+
     public ObservableCollection<TreeModel> Children { get; }
 
     public IconEnum Icon { get; private init; } = IconEnum.Root;
 
     public double Proportion { get; private init; } = 1.0;
-
 }

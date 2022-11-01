@@ -51,7 +51,7 @@ public class DirScanner : IDirScanner
                     break;
                 }
             }
-        
+
         root.RecalculateSize();
         return root;
     }

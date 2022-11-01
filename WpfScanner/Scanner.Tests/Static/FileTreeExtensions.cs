@@ -27,7 +27,7 @@ internal static class FileTreeExtensions
         return areEqual;
     }
 
-    public static bool IsSubsetOf(this FileNode self, FileNode other)
+    public static bool IsLesserThan(this FileNode self, FileNode other)
     {
         // Convert nodes to trees.
         var selfTree = self as FileTree;
@@ -46,7 +46,7 @@ internal static class FileTreeExtensions
                 // Check if all children nodes in self are in relation with some child node of other.  
                 isSubset = isSubset && selfTree!.Children
                     .All(selfChild => selfChild
-                        .IsSubsetOf(otherTree!.Children
+                        .IsLesserThan(otherTree!.Children
                             .First(otherChild => selfChild.Path == otherChild.Path &&
                                                  (selfChild is FileTree && otherChild is FileTree ||
                                                   selfChild is not FileTree && otherChild is not FileTree))));

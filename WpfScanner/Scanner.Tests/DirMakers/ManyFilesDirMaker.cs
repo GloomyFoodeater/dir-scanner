@@ -1,6 +1,6 @@
 ﻿using Scanner.Core.Models;
 using Scanner.Tests.Interfaces;
-using static Scanner.Tests.Static.Utils;
+using static Scanner.Tests.Static.FileUtils;
 
 namespace Scanner.Tests.DirMakers;
 
@@ -9,12 +9,12 @@ internal class ManyFilesDirMaker : IDirMaker
     public FileTree Create(string destinationPath)
     {
         destinationPath = Path.GetFullPath(destinationPath);
-        
-        RemoveDir(destinationPath);
+
+        RemoveDirectory(destinationPath);
         Directory.CreateDirectory(destinationPath);
 
         List<FileNode> children = new();
-        
+
         // Generating files & appending to children list.
         const int fileCount = 50;
         const int startSize = 50;
@@ -23,7 +23,7 @@ internal class ManyFilesDirMaker : IDirMaker
             var filePath = $"{destinationPath}\\{i}.txt";
             var fileSize = i * startSize;
             MakeFile(filePath, fileSize);
-            
+
             children.Add(new(filePath, fileSize));
         }
 

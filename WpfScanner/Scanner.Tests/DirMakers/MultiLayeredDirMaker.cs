@@ -1,6 +1,6 @@
 ﻿using Scanner.Core.Models;
 using Scanner.Tests.Interfaces;
-using static Scanner.Tests.Static.Utils;
+using static Scanner.Tests.Static.FileUtils;
 
 namespace Scanner.Tests.DirMakers;
 
@@ -8,7 +8,6 @@ internal class MultiLayeredDirMaker : IDirMaker
 {
     public FileTree MakeDir(int nestLevel, string rootPath)
     {
-
         List<FileNode> children = new();
 
         const int startSize = 100;
@@ -21,7 +20,7 @@ internal class MultiLayeredDirMaker : IDirMaker
                 MakeFile(path, i * startSize);
                 children.Add(new(path, i * startSize));
             }
-            else if(nestLevel > 0)
+            else if (nestLevel > 0)
             {
                 path = $"{rootPath}\\{i / 2}";
                 Directory.CreateDirectory(path);
@@ -30,18 +29,18 @@ internal class MultiLayeredDirMaker : IDirMaker
             }
         }
 
-        FileTree res =  new(rootPath, children);
+        FileTree res = new(rootPath, children);
         res.RecalculateSize();
         return res;
     }
-    
+
     public FileTree Create(string destinationPath)
     {
         destinationPath = Path.GetFullPath(destinationPath);
-        
-        RemoveDir(destinationPath);
+
+        RemoveDirectory(destinationPath);
         Directory.CreateDirectory(destinationPath);
-        
+
         return MakeDir(3, destinationPath);
     }
 }

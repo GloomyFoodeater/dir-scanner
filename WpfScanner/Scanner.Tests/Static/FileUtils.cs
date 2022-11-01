@@ -1,8 +1,8 @@
 ﻿namespace Scanner.Tests.Static;
 
-internal static class Utils
+internal static class FileUtils
 {
-    public static void RemoveDir(string path)
+    public static void RemoveDirectory(string path)
     {
         if (Directory.Exists(path))
             Directory.Delete(path, true);

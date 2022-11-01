@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Globalization;
 using System.Windows.Data;
-using Scanner.Core.Models;
 using WpfApp.Model;
 
 namespace WpfApp.Converters;

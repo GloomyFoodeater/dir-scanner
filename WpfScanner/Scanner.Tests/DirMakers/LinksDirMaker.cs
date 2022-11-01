@@ -1,6 +1,6 @@
 ﻿using Scanner.Core.Models;
 using Scanner.Tests.Interfaces;
-using static Scanner.Tests.Static.Utils;
+using static Scanner.Tests.Static.FileUtils;
 
 namespace Scanner.Tests.DirMakers;
 
@@ -10,7 +10,7 @@ internal class LinksDirMaker : IDirMaker
     {
         destinationPath = Path.GetFullPath(destinationPath);
 
-        RemoveDir(destinationPath);
+        RemoveDirectory(destinationPath);
         Directory.CreateDirectory(destinationPath);
         MakeFile($@"{destinationPath}\1.txt", 100);
 
