@@ -4,11 +4,11 @@ using System.ComponentModel;
 using System.IO;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
+using System.Windows.Forms;
 using Scanner.Core.Interfaces;
 using Scanner.Core.Services;
 using WpfApp.Commands;
 using WpfApp.Model;
-using System.Windows.Forms;
 
 namespace WpfApp.ViewModel;
 
@@ -17,9 +17,9 @@ public sealed class AppViewModel : INotifyPropertyChanged
     private const int MaxThreadCount = 100;
     private readonly IDirScanner _scanner = new DirScanner(MaxThreadCount);
 
-    private bool _isScanning;
-
     private ObservableCollection<TreeModel>? _currentTree;
+
+    private bool _isScanning;
     private string? _selectedPath;
 
     public AppViewModel()
@@ -36,7 +36,7 @@ public sealed class AppViewModel : INotifyPropertyChanged
             {
                 Task.Run(() =>
                     {
-                        _isScanning = true;
+                        IsScanning = true;
                         try
                         {
                             var result = _scanner.Scan(_selectedPath!);
@@ -50,19 +50,19 @@ public sealed class AppViewModel : INotifyPropertyChanged
                             MessageBox.Show(e.Message, "Error", MessageBoxButtons.OK);
                         }
 
-                        _isScanning = false;
+                        IsScanning = false;
                     }
                 );
             },
-            canExecute: _ => _selectedPath != null && !_isScanning);
+            canExecute: _ => SelectedPath != null && !IsScanning);
 
         CancelCommand = new(
             execute: _ =>
             {
                 _scanner.Cancel();
-                _isScanning = false;
+                IsScanning = false;
             },
-            canExecute: _ => _isScanning);
+            canExecute: _ => IsScanning);
     }
 
     public ObservableCollection<TreeModel>? CurrentTree
@@ -71,6 +71,16 @@ public sealed class AppViewModel : INotifyPropertyChanged
         private set
         {
             _currentTree = value;
+            OnPropertyChanged();
+        }
+    }
+
+    public bool IsScanning
+    {
+        get => _isScanning;
+        set
+        {
+            _isScanning = value;
             OnPropertyChanged();
         }
     }
