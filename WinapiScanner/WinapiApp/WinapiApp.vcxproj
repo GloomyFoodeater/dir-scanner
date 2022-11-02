@@ -130,7 +130,7 @@
     <ClInclude Include="BlockingList.h" />
     <ClInclude Include="DirectoryScanner.h" />
     <ClInclude Include="framework.h" />
-    <ClInclude Include="NonBlockingList.h" />
+    <ClInclude Include="InsertableNonBlockingList.h" />
     <ClInclude Include="IList.h" />
     <ClInclude Include="List.h" />
     <ClInclude Include="Node.h" />

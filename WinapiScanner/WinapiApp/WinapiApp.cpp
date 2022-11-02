@@ -55,6 +55,15 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 
 	MSG msg;
 
+	//NonBlockingList<int, int> list;
+	//list.insert(5, 0);
+	//list.insert(2, 0);
+	//list.insert(3, 0);
+	//list.insert(7, 0);
+	//list.insert(4, 0);
+	//list.insert(2, 0);
+
+
 	// Main message loop:
 	while (GetMessage(&msg, nullptr, 0, 0))
 	{
@@ -242,7 +251,7 @@ void OnScanClick()
 
 
 	// Scan directory
-	NonBlockingList<wstring, int> list;
+	InsertableNonBlockingList<wstring, int> list;
 	bool res = scanner.Scan(dir, needle, list);
 	if (!res)
 	{

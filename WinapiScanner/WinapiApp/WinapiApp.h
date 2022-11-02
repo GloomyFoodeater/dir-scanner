@@ -6,7 +6,7 @@
 
 #include "List.h"
 #include "BlockingList.h"
-#include "NonBlockingList.h"
+#include "InsertableNonBlockingList.h"
 
 #include "DirectoryScanner.h"
 

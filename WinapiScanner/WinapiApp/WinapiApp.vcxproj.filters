@@ -42,7 +42,7 @@
     <ClInclude Include="DirectoryScanner.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="NonBlockingList.h">
+    <ClInclude Include="InsertableNonBlockingList.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
